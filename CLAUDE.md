@@ -342,7 +342,7 @@ Update at the end of every step. Keep entries to one or two lines.
 |---|---|---|
 | 0 - Setup | Done (2026-09-25) | Structure, requirements, config.py, .gitignore, README. osmnx and networkx to install. |
 | 1 - Population grid | Done (2026-09-25) | 2,169 cells, 328,618 residents (-0.8% vs official 31.12.2024). 1,117 cells age-suppressed (<100 residents), none dropped. |
-| 2 - Candidate sites | Not started | Checkpoint: owner approves candidate list |
+| 2 - Candidate sites | Checkpoint (2026-09-25) | 128 matched stores/malls -> 80 sites (mall-outline merge, 4 OSM objects excluded). Awaiting owner approval of the list. |
 | 3 - Walk network | Not started | |
 | 4 - Site selection | Not started | |
 | 5 - Excel workbook | Not started | |
@@ -378,6 +378,25 @@ Record every escalated decision here: option chosen and a one-line reason.
   area (the 30-minute cap stops sparse rural cells dominating). Lockers are placed only
   inside Espoo and Kauniainen; lockers across the Helsinki boundary are a stated
   limitation.
+
+- **Step 2, merging stores into shopping centres (2026-09-25).** The 50 m point merge
+  measured from each mall's centre point, so large malls split into several sites (Sello
+  into 6, two of them unnamed OSM parts). Chosen: a store inside a shopping centre's OSM
+  outline, or within 50 m of it, counts as that centre; touching centre parts merge;
+  other candidates still merge at 50 m. Gives one correctly named site per centre.
+  Rejected: keeping the point merge (95 sites, duplicates), a 150 m radius (74 sites,
+  chains up to 351 m and merges unrelated neighbouring stores).
+
+- **Step 2, stale OSM objects (2026-09-25).** OSM had 10 R-kioskis; the official list
+  (r-kioski.fi/kioskit) has 7 in Espoo, none in Kauniainen, all 7 present in OSM. The 3
+  extra (Suvela, Mankkaanportti, Keilaniemi metro) have closed. Chosen: exclude them by
+  OSM id in a documented list in `02_candidate_sites.py`, plus MotorCenter Espoonlahti
+  (tagged shop=mall, a car dealership). Rejected: keeping them, or scraping r-kioski.fi
+  on every run (still needs a hand-made name match).
+
+- **Step 2, Overpass mirror (2026-09-25).** The kumi.systems mirror served OSM data from
+  2026-06-01 (four months stale). Mirrors removed; the script uses the main endpoint
+  with retries and prints the data timestamp.
 
 ---
 

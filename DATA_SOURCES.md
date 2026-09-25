@@ -64,9 +64,12 @@ Espoo KU049 + Kauniainen KU235.
 
 ## 2. Candidate sites: OpenStreetMap via Overpass
 
-Endpoint: `https://overpass-api.de/api/interpreter` (mirrors exist if it times out; the
-main endpoint returned 504 on a heavy area query during planning, and a simple bounding-box
-query worked). Cache the raw JSON response to `data/raw/`.
+Endpoint: `https://overpass-api.de/api/interpreter`. It often returns 504 or 429 under
+load; the script retries after a pause. Do not use public mirrors: in Step 2 the
+kumi.systems mirror served OSM data four months old. The query uses `out geom;` (not
+`out geom tags;`, which drops relation members) so shopping centre outlines are
+available. The raw JSON is cached to `data/raw/overpass_shops_espoo.json`, and the
+summary prints its `timestamp_osm_base`.
 
 Tags:
 
