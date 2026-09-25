@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Superseded planning brief
+private/
+
+# Raw downloaded data, treated as read-only and refetched as needed
+data/raw/
+
+# Python
+__pycache__/
+*.pyc
+
+# Large intermediate files
+data/processed/*.gpkg
+
+# Cached walking network graphs and OSMnx HTTP cache
+*.graphml
+cache/

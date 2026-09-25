@@ -1,0 +1,9 @@
+geopandas
+pandas
+numpy
+requests
+shapely
+openpyxl
+osmnx
+networkx
+scipy
