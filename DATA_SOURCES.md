@@ -45,8 +45,20 @@ Population grid notes:
 - Licence: HSY open data is published under CC BY 4.0. Confirm on the HSY open data page
   and attribute as "Helsinki Region Environmental Services HSY".
 
-Field names in the boundary and district layers are not yet confirmed. Inspect them in
-Step 1.
+Field names confirmed in Step 1 (2026-09-25):
+
+- `seutukartta_kunta_2021`: `nimi` (municipality name), `kunta` (code; Espoo 049,
+  Kauniainen 235)
+- `seutukartta_suur_2021`: `nimi` (district name), `kunta` (municipality code)
+- `seutukartta_juna_metro_radat`: `tyyppi` (`l_jrata` rail, `l_metror` metro), `rata`
+- `seutukartta_asemat`: `tyyppi` (`juna-asemat`, `metroasemat`), `asema` (name)
+- All layers are served in EPSG:3879, easting first. The server returned every layer in
+  a single request (no feature limit hit); the script still pages and checks the count.
+- Age bands are suppressed (coded 99) in every cell with fewer than 100 residents.
+
+Official population used for the Step 1 check: Statistics Finland StatFin table 11ra
+(`https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/11ra.px`), "Vaesto 31.12.",
+Espoo KU049 + Kauniainen KU235.
 
 ---
 

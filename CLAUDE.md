@@ -341,7 +341,7 @@ Update at the end of every step. Keep entries to one or two lines.
 | Step | Status | Notes |
 |---|---|---|
 | 0 - Setup | Done (2026-09-25) | Structure, requirements, config.py, .gitignore, README. osmnx and networkx to install. |
-| 1 - Population grid | Not started | |
+| 1 - Population grid | Done (2026-09-25) | 2,169 cells, 328,618 residents (-0.8% vs official 31.12.2024). 1,117 cells age-suppressed (<100 residents), none dropped. |
 | 2 - Candidate sites | Not started | Checkpoint: owner approves candidate list |
 | 3 - Walk network | Not started | |
 | 4 - Site selection | Not started | |
