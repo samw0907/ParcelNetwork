@@ -17,3 +17,6 @@ data/processed/*.gpkg
 # Cached walking network graphs and OSMnx HTTP cache
 *.graphml
 cache/
+
+# LibreOffice lock files
+.~lock.*#

@@ -352,7 +352,7 @@ Update at the end of every step. Keep entries to one or two lines.
 | 3 - Walk network | Done (2026-09-26) | Walk filter + cycleways: 126,525 nodes kept (98%). Cell snap p99 126 m, max 256 m; 1 cell >200 m. SNAP_EXCLUDE_M = 500 (excludes none). |
 | 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. Priority tiers 1-10, 11-19, 20-34, 35-47. |
 | 5 - Excel workbook | Done (2026-09-26) | Six sheets as planned; Sites and Candidates carry tier; Districts adds candidate / chosen counts and a total row. |
-| 6 - Export GIS | Not started | |
+| 6 - Export GIS | Done (2026-09-26) | 8 layers in outputs/gis/parcelnetwork.gpkg (EPSG:3067); candidates carry rank and tier. README finalised with results and method notes. |
 | 7 - QGIS poster | Not started (manual) | |
 
 ### Decisions made during the project
