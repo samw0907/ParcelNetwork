@@ -353,7 +353,7 @@ Update at the end of every step. Keep entries to one or two lines.
 | 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. Priority tiers 1-10, 11-19, 20-34, 35-47. |
 | 5 - Excel workbook | Done (2026-09-26) | Six sheets as planned; Sites and Candidates carry tier; Districts adds candidate / chosen counts and a total row. |
 | 6 - Export GIS | Done (2026-09-26) | 8 layers in outputs/gis/parcelnetwork.gpkg (EPSG:3067); candidates carry rank and tier. README finalised with results and method notes. |
-| 7 - QGIS poster | Not started (manual) | |
+| 7 - QGIS poster | In progress (manual) | qgis/poster_guide.md written (2026-09-26): styling, map themes, extents, legends, captions and page text with current figures. |
 
 ### Decisions made during the project
 
@@ -448,6 +448,13 @@ Record every escalated decision here: option chosen and a one-line reason.
   recomputed district shares (study-area total 54.6% vs 54.4% on the curve). Step 4 now
   stores unrounded minutes; all sheets agree. Step 4 also writes a `run_summary` table so
   the ceiling and target are not recomputed downstream.
+
+- **Step 7 prep, nearest-site bug (2026-09-26, fixed).** Cells with no chosen site
+  within the 30-minute cap (1,071 cells / 82,173 residents at 10 sites; 372 / 7,339 at
+  47) were given the last candidate's id (80, Suvelan Ostari) as `site_10`/`site_final`,
+  inflating its "residents nearest" (21,595, correctly 14,256). Coverage shares, walk
+  times, ranks and tiers were unaffected. Step 4 now leaves those cells blank; Steps 4-6
+  rerun.
 
 ---
 

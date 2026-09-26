@@ -154,8 +154,12 @@ def main():
             break
 
     n_final = len(chosen)
-    site_ids = sites["site_id"].to_numpy()
     min_10, near_10 = snapshot
+
+    def site_id_of(nearest_index):
+        """Chosen site id per cell; blank where no chosen site is within the cap."""
+        ids = pd.Series(sites["site_id"].to_numpy()[nearest_index], dtype="Int64")
+        return ids.mask(nearest_index < 0)
 
     cells_access = gpd.GeoDataFrame({
         "cell_id": cells["cell_id"],
@@ -163,10 +167,10 @@ def main():
         "district": cells["district"],
         "min_10": min_10,
         "band_10": to_band(min_10),
-        "site_10": site_ids[near_10],
+        "site_10": site_id_of(near_10),
         "min_final": current,
         "band_final": to_band(current),
-        "site_final": site_ids[nearest],
+        "site_final": site_id_of(nearest),
     }, geometry=cells.geometry, crs=TARGET_CRS)
 
     sites_selected = gpd.GeoDataFrame(site_rows_out, geometry="geometry", crs=TARGET_CRS)
