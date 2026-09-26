@@ -287,7 +287,8 @@ may be under-mapped in OSM). Do not proceed to Step 3 until the candidate list i
   `residents`, `district`, `min_10`, `band_10`, `site_10`, `min_final`, `band_final`,
   `site_final`), `sites_selected` (points with the attributes above plus residents
   nearest at the final N and a priority `tier`), and a non-spatial `coverage_curve`
-  table (one row per N).
+  table (one row per N), and a non-spatial `run_summary` table (ceiling, target, N) read by
+  Step 5. Walk minutes are stored unrounded so shares computed later match the curve.
 - Priority tiers (added after the first run): tier 1 is the first `SNAPSHOT_SITES`; tiers 2
   and 3 end where the share within `TARGET_MIN` first reaches each `TIER_MILESTONES`
   fraction (0.50, 0.75) of the ceiling; tier 4 ends at the stopping point.
@@ -350,7 +351,7 @@ Update at the end of every step. Keep entries to one or two lines.
 | 2 - Candidate sites | Checkpoint (2026-09-25) | 128 matched stores/malls -> 80 sites (mall-outline merge, 4 OSM objects excluded). Awaiting owner approval of the list. |
 | 3 - Walk network | Done (2026-09-26) | Walk filter + cycleways: 126,525 nodes kept (98%). Cell snap p99 126 m, max 256 m; 1 cell >200 m. SNAP_EXCLUDE_M = 500 (excludes none). |
 | 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. Priority tiers 1-10, 11-19, 20-34, 35-47. |
-| 5 - Excel workbook | Not started | |
+| 5 - Excel workbook | Done (2026-09-26) | Six sheets as planned; Sites and Candidates carry tier; Districts adds candidate / chosen counts and a total row. |
 | 6 - Export GIS | Not started | |
 | 7 - QGIS poster | Not started (manual) | |
 
@@ -441,6 +442,12 @@ Record every escalated decision here: option chosen and a one-line reason.
   75%), 35-47 (stopping point, 90%). Each tier needs more sites for less progress, which
   shows the diminishing returns. Rejected: blocks of ten (arbitrary boundaries, uneven
   last block of 17); numbering all 47 (cluttered).
+
+- **Step 5, rounding mismatch (2026-09-26, minor, fixed).** Step 4 stored cell walk
+  minutes rounded to 0.1, so cells at 10.01-10.04 min counted as "within 10" when Step 5
+  recomputed district shares (study-area total 54.6% vs 54.4% on the curve). Step 4 now
+  stores unrounded minutes; all sheets agree. Step 4 also writes a `run_summary` table so
+  the ceiling and target are not recomputed downstream.
 
 ---
 

@@ -23,6 +23,7 @@ Output: data/processed/selection.gpkg
                   share within TARGET_MIN reaches each TIER_MILESTONES fraction of
                   the ceiling, the last tier ending at the stopping point
   coverage_curve  one row per number of sites (no geometry)
+  run_summary     ceiling, target and final N as item / value rows (no geometry)
 """
 
 import geopandas as gpd
@@ -160,10 +161,10 @@ def main():
         "cell_id": cells["cell_id"],
         "residents": cells["residents"],
         "district": cells["district"],
-        "min_10": np.round(min_10, 1),
+        "min_10": min_10,
         "band_10": to_band(min_10),
         "site_10": site_ids[near_10],
-        "min_final": np.round(current, 1),
+        "min_final": current,
         "band_final": to_band(current),
         "site_final": site_ids[nearest],
     }, geometry=cells.geometry, crs=TARGET_CRS)
@@ -201,6 +202,18 @@ def main():
     cells_access.to_file(SELECTION_GPKG, layer="cells_access", driver="GPKG")
     sites_selected.to_file(SELECTION_GPKG, layer="sites_selected", driver="GPKG")
     pyogrio.write_dataframe(curve, SELECTION_GPKG, layer="coverage_curve", driver="GPKG")
+    run_summary = pd.DataFrame([
+        ("residents", total),
+        ("cells", len(cells)),
+        ("cells_excluded", n_excluded),
+        ("candidates", len(sites)),
+        ("ceiling_share", ceiling),
+        ("ceiling_avg_walk_min", float(np.average(all_open, weights=residents))),
+        ("target_share", target),
+        ("n_final", n_final),
+        ("target_reached", int(stop_reason == "target reached")),
+    ], columns=["item", "value"])
+    pyogrio.write_dataframe(run_summary, SELECTION_GPKG, layer="run_summary", driver="GPKG")
 
     print("\n--- Summary ---")
     print(f"Cells used: {len(cells):,} ({total:,.0f} residents); excluded for snap > "
@@ -244,6 +257,7 @@ def main():
     print(f"  layer 'cells_access'   {len(cells_access):,} polygons")
     print(f"  layer 'sites_selected' {len(sites_selected)} points")
     print(f"  layer 'coverage_curve' {len(curve)} rows")
+    print(f"  layer 'run_summary'    {len(run_summary)} rows")
 
 
 if __name__ == "__main__":
