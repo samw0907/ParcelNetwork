@@ -18,7 +18,10 @@ TARGET_MIN reaches TARGET_SHARE of that ceiling, or at MAX_SITES.
 Output: data/processed/selection.gpkg
   cells_access    cell polygons: residents, district, min_10, band_10, site_10,
                   min_final, band_final, site_final
-  sites_selected  chosen sites in rank order (points)
+  sites_selected  chosen sites in rank order (points), with a priority tier:
+                  tier 1 the first SNAPSHOT_SITES, then tiers ending where the
+                  share within TARGET_MIN reaches each TIER_MILESTONES fraction of
+                  the ceiling, the last tier ending at the stopping point
   coverage_curve  one row per number of sites (no geometry)
 """
 
@@ -32,7 +35,8 @@ from scipy.sparse.csgraph import dijkstra
 
 from config import (BAND_EDGES_MIN, GRID_GPKG, MAX_SITES, PROCESSED_DIR, SELECTION_GPKG,
                     SITES_GPKG, SNAP_EXCLUDE_M, SNAPS_GPKG, SNAPSHOT_SITES, TARGET_CRS,
-                    TARGET_MIN, TARGET_SHARE, WALK_CAP_MIN, WALK_SPEED_M_PER_MIN)
+                    TARGET_MIN, TARGET_SHARE, TIER_MILESTONES, WALK_CAP_MIN,
+                    WALK_SPEED_M_PER_MIN)
 
 PROJECTED_GRAPH = PROCESSED_DIR / "walk_network_3067.graphml"
 REPORT_MIN = [5, 10, 15]
@@ -170,6 +174,13 @@ def main():
         sites_selected["site_id"].map(nearest_final).fillna(0).astype(int))
     curve = pd.DataFrame(curve_rows)
 
+    share_col = f"share_{TARGET_MIN}min"
+    tier_ends = [SNAPSHOT_SITES]
+    for fraction in TIER_MILESTONES:
+        tier_ends.append(int(curve.loc[curve[share_col] >= fraction * ceiling, "n_sites"].min()))
+    tier_ends.append(n_final)
+    sites_selected["tier"] = np.searchsorted(tier_ends, sites_selected["rank"]) + 1
+
     # Walk-time distribution at the two map snapshots, to check the band edges.
     fine_bins = [-np.inf, 3, 5, 7.5, 10, 12.5, 15, 20, 25, 29.99, np.inf]
     fine_labels = ["<=3", "3-5", "5-7.5", "7.5-10", "10-12.5", "12.5-15", "15-20",
@@ -208,9 +219,19 @@ def main():
     print(view.to_string(index=False))
 
     print("\nChosen sites:")
-    tbl = sites_selected[["rank", "name", "chain", "district", "residents_new",
+    tbl = sites_selected[["rank", "tier", "name", "chain", "district", "residents_new",
                           "residents_nearest_final"]]
     print(tbl.to_string(index=False))
+    print("\nPriority tiers:")
+    tier_rows, start = [], 1
+    for tier, end in enumerate(tier_ends, start=1):
+        share = curve.loc[curve["n_sites"] == end, share_col].iloc[0]
+        tier_rows.append({"tier": tier, "ranks": f"{start}-{end}", "sites": end - start + 1,
+                          f"within_{TARGET_MIN}min_after_%": round(share * 100, 1),
+                          "share_of_ceiling_%": round(share / ceiling * 100, 1)})
+        start = end + 1
+    print(pd.DataFrame(tier_rows).to_string(index=False))
+
     print("\nChosen sites by chain:")
     print(sites_selected["chain"].value_counts().to_string())
 

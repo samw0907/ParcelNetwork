@@ -286,14 +286,18 @@ may be under-mapped in OSM). Do not proceed to Step 3 until the candidate list i
 - Output: `data/processed/selection.gpkg` with layers `cells_access` (cell polygons with
   `residents`, `district`, `min_10`, `band_10`, `site_10`, `min_final`, `band_final`,
   `site_final`), `sites_selected` (points with the attributes above plus residents
-  nearest at the final N), and a non-spatial `coverage_curve` table (one row per N).
+  nearest at the final N and a priority `tier`), and a non-spatial `coverage_curve`
+  table (one row per N).
+- Priority tiers (added after the first run): tier 1 is the first `SNAPSHOT_SITES`; tiers 2
+  and 3 end where the share within `TARGET_MIN` first reaches each `TIER_MILESTONES`
+  fraction (0.50, 0.75) of the ceiling; tier 4 ends at the stopping point.
 - Summary: N reached, the coverage curve at 10, 20, 30 ... N, and headline figures.
 
 ### Step 5 - Excel workbook (`05_export_excel.py`)
 
 `outputs/parcel_locker_analysis.xlsx`, plain formatted tables, sheets:
 
-1. **Sites** - chosen sites in rank order: rank, name, chain, district, residents newly
+1. **Sites** - chosen sites in rank order: rank, tier, name, chain, district, residents newly
    served, resident-minutes saved, average walk after, share within 10 min after.
 2. **Coverage Curve** - one row per N: average walk, share within 5, 10, 15 minutes.
 3. **Districts** - residents, average walk and share within 10 minutes at 10 sites and at
@@ -345,7 +349,7 @@ Update at the end of every step. Keep entries to one or two lines.
 | 1 - Population grid | Done (2026-09-25) | 2,169 cells, 328,618 residents (-0.8% vs official 31.12.2024). 1,117 cells age-suppressed (<100 residents), none dropped. |
 | 2 - Candidate sites | Checkpoint (2026-09-25) | 128 matched stores/malls -> 80 sites (mall-outline merge, 4 OSM objects excluded). Awaiting owner approval of the list. |
 | 3 - Walk network | Done (2026-09-26) | Walk filter + cycleways: 126,525 nodes kept (98%). Cell snap p99 126 m, max 256 m; 1 cell >200 m. SNAP_EXCLUDE_M = 500 (excludes none). |
-| 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. |
+| 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. Priority tiers 1-10, 11-19, 20-34, 35-47. |
 | 5 - Excel workbook | Not started | |
 | 6 - Export GIS | Not started | |
 | 7 - QGIS poster | Not started (manual) | |
@@ -430,6 +434,14 @@ Record every escalated decision here: option chosen and a one-line reason.
   "over 20", which is the Map 2 message (ten lockers leave half of Espoo over 20 minutes
   away), so no extra band was added.
 
+- **Step 4, priority tiers (2026-09-26).** Greedy rank is a true build order (resident-
+  minutes saved falls at every step, 610k at rank 1 to 22k at rank 47), but 47 numbers
+  would clutter Map 3. Chosen: four colour-coded tiers at milestones toward the
+  achievable maximum: 1-10 (first ten, 31%), 11-19 (half, 52%), 20-34 (three quarters,
+  75%), 35-47 (stopping point, 90%). Each tier needs more sites for less progress, which
+  shows the diminishing returns. Rejected: blocks of ten (arbitrary boundaries, uneven
+  last block of 17); numbering all 47 (cluttered).
+
 ---
 
 ## 9. Page and map plan (for the QGIS stage)
@@ -467,10 +479,12 @@ then a numbered list of the 10 sites (name, residents served) ending with "10 lo
 within 10 min, average walk Y min".
 
 **Map 3 - Reaching 90% of what is possible.** (Working title: N sites bring 90% of the
-residents who could ever be within 10 minutes of these host types.) Same frame and bands, all N sites: the first 10 keep their
-crosses, later sites as small dots. Legend column: bands plus a small coverage-curve table
-(10, 20, 30, N lockers against share within 10 minutes and average walk). The message is
-the diminishing return: late sites each serve far fewer residents.
+residents who could ever be within 10 minutes of these host types.) Same frame and bands,
+all N sites coloured by priority tier: tier 1 (the first 10) keep their numbered crosses
+from Map 2, tiers 2-4 as dots in three colours. Legend column: bands plus a small tier
+table (tier, sites, share within 10 minutes reached, share of the achievable maximum).
+The message is the diminishing return: each tier needs more sites for less progress
+(tiers of 10, 9, 15 and 13 sites reach 31%, 52%, 75% and 90% of the achievable maximum).
 
 **Key findings:** written after the run with concrete numbers: the coverage curve, the cost
 of the last 10%, which chains' stores are chosen most, where coverage stays expensive.

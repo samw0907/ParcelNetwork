@@ -66,7 +66,12 @@ TARGET_MIN = 10
 # Stop when the share of residents within TARGET_MIN reaches TARGET_SHARE of the
 # share achievable with every candidate open (the ceiling).
 TARGET_SHARE = 0.90
-SNAPSHOT_SITES = 10         # Map 2 snapshot
+SNAPSHOT_SITES = 10         # Map 2 snapshot, and priority tier 1
+
+# Priority tiers for chosen sites, in build order: tier 1 is the first SNAPSHOT_SITES,
+# then each tier ends where the share within TARGET_MIN first reaches this fraction
+# of the ceiling. The last tier ends at the stopping point (TARGET_SHARE).
+TIER_MILESTONES = [0.50, 0.75]
 MAX_SITES = 60
 
 # Walking-time band edges in minutes: under 5, 5-10, 10-15, 15-20, over 20.
