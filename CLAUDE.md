@@ -123,7 +123,7 @@ Decided during planning (2026-09-25). Do not revisit without escalating.
 | Walking speed | 4.8 km/h (80 m per minute) |
 | Site selection | Greedy: add one site at a time, each the candidate that most reduces total resident walking time |
 | Walk cap in objective | 30 minutes. Longer walks count as 30. |
-| Stopping rule | Stop when 90% of residents are within a 10-minute walk, or at `MAX_SITES` (config) |
+| Stopping rule | Stop when the share of residents within a 10-minute walk reaches 90% of the share achievable with every candidate open (the ceiling), or at `MAX_SITES` (config). Revised in Step 3; see decisions log. |
 | Map snapshots | Walk times reported at 10 sites (Map 2) and at the final N (Map 3) |
 | Working CRS | ETRS-TM35FIN, EPSG:3067. HSY publishes in EPSG:3879; reproject on load. |
 | Excel | Plain formatted tables. No pivot tables, no openpyxl Table objects (LibreOffice). |
@@ -276,8 +276,9 @@ may be under-mapped in OSM). Do not proceed to Step 3 until the candidate list i
 - For each chosen site record: rank, name, chain, district, residents for whom it became
   the nearest locker when added, total resident-minutes saved, and after adding it: average
   walk (population-weighted, capped) and share of residents within 5, 10 and 15 minutes.
-- Stop at `TARGET_SHARE` within `TARGET_MIN`, or at `MAX_SITES`. If `MAX_SITES` is hit
-  first, stop and escalate.
+- Ceiling: the share of residents within `TARGET_MIN` with every candidate open. Stop when
+  the share within `TARGET_MIN` reaches `TARGET_SHARE` of that ceiling, or at `MAX_SITES`.
+  If `MAX_SITES` is hit first, stop and escalate. Report the ceiling as a headline figure.
 - Band edges: before writing outputs, print the distribution of walk minutes at 10 sites
   and at N. Default bands are under 5, 5-10, 10-15, 15-20, over 20 minutes. If the data
   suggests different round edges, propose them and wait. Maps 2 and 3 must use identical
@@ -343,8 +344,8 @@ Update at the end of every step. Keep entries to one or two lines.
 | 0 - Setup | Done (2026-09-25) | Structure, requirements, config.py, .gitignore, README. osmnx and networkx to install. |
 | 1 - Population grid | Done (2026-09-25) | 2,169 cells, 328,618 residents (-0.8% vs official 31.12.2024). 1,117 cells age-suppressed (<100 residents), none dropped. |
 | 2 - Candidate sites | Checkpoint (2026-09-25) | 128 matched stores/malls -> 80 sites (mall-outline merge, 4 OSM objects excluded). Awaiting owner approval of the list. |
-| 3 - Walk network | Not started | |
-| 4 - Site selection | Not started | |
+| 3 - Walk network | Done (2026-09-26) | Walk filter + cycleways: 126,525 nodes kept (98%). Cell snap p99 126 m, max 256 m; 1 cell >200 m. SNAP_EXCLUDE_M = 500 (excludes none). |
+| 4 - Site selection | Done (2026-09-26) | Ceiling 60.2% within 10 min (all 80 open); target 54.2%; N = 47. At 10 sites 18.6% within 10 min, avg 19.4 min; at 47 sites 54.4%, avg 10.5 min. Default bands kept. |
 | 5 - Excel workbook | Not started | |
 | 6 - Export GIS | Not started | |
 | 7 - QGIS poster | Not started (manual) | |
@@ -398,6 +399,37 @@ Record every escalated decision here: option chosen and a one-line reason.
   2026-06-01 (four months stale). Mirrors removed; the script uses the main endpoint
   with retries and prints the data timestamp.
 
+- **Step 3, walking network filter (2026-09-26).** OSMnx's standard `walk` filter excludes
+  all `highway=cycleway`, but 98% of Espoo's cycleways are shared foot/cycle paths
+  (`foot=designated`). With it, Otaniemi was a detached piece, 20 cells (5,518 residents)
+  snapped over 200 m, and all 80 sites put only 40% within 10 min. Chosen: the standard
+  filter with cycleways kept (`foot=no` still excluded): 1 cell over 200 m, 60% within
+  10 min with all sites. Rejected: the standard filter (wrong for Finnish OSM),
+  `network_type="all"` (includes private ways). `SNAP_EXCLUDE_M` set to 500 m (max cell
+  snap is 256 m, so it is a guard only).
+
+- **Stopping rule (2026-09-26, found in Step 3).** With every one of the 80 candidates
+  open, only 60.2% of residents are within a 10-minute walk (79.8% within 800 m straight
+  line), so "90% within 10 minutes" can never be met. The polycentric layout, with stores
+  concentrated in large hubs, makes this expected. Chosen: stop when the share within 10
+  minutes reaches 90% of that achievable ceiling (about 54%, roughly 47 sites in a trial
+  run). Keeps the 10-minute walk, which is the more reasonable walk for a locker, and
+  makes the ceiling itself a headline finding. Considered: 80% within 15 minutes (about the
+  same N, simpler wording, but a longer walk); a plain lower target such as 50% within 10
+  minutes (arbitrary); no target and a full 80-site curve (arbitrary cut-off).
+
+- **Step 4, site names (2026-09-26, minor, not escalated).** 30 of the 47 chosen sites
+  were named only by chain ("K-Market", "Alepa"), useless on the Map 2 list and in Excel.
+  `02_candidate_sites.py` now appends the OSM `branch` tag ("K-Market Kilo"), or the street
+  when there is no branch ("Lidl Kurjenkellontie"). Selection results are unchanged.
+  One OSM typo carries through: "K-Market Iiivisniemi" (Iivisniemi); fix by hand on the
+  poster if it appears.
+
+- **Step 4, band edges (2026-09-26).** Defaults kept (under 5, 5-10, 10-15, 15-20, over
+  20). At 47 sites residents spread 16 / 38 / 27 / 12 / 7%. At 10 sites 49% fall in
+  "over 20", which is the Map 2 message (ten lockers leave half of Espoo over 20 minutes
+  away), so no extra band was added.
+
 ---
 
 ## 9. Page and map plan (for the QGIS stage)
@@ -434,7 +466,8 @@ first 10 sites; sites as numbered yellow crosses with a dark outline. Legend col
 then a numbered list of the 10 sites (name, residents served) ending with "10 lockers: X%
 within 10 min, average walk Y min".
 
-**Map 3 - Reaching 90%.** Same frame and bands, all N sites: the first 10 keep their
+**Map 3 - Reaching 90% of what is possible.** (Working title: N sites bring 90% of the
+residents who could ever be within 10 minutes of these host types.) Same frame and bands, all N sites: the first 10 keep their
 crosses, later sites as small dots. Legend column: bands plus a small coverage-curve table
 (10, 20, 30, N lockers against share within 10 minutes and average walk). The message is
 the diminishing return: late sites each serve far fewer residents.

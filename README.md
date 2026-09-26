@@ -29,8 +29,9 @@ order and a coverage curve showing how quickly the returns diminish.
   excluded.
 - Walking: along the OpenStreetMap walking network at 4.8 km/h (80 m per minute).
 - Selection: greedy. Start with no lockers, add the candidate that most reduces total
-  resident walking time (walks capped at 30 minutes), and repeat until 90% of residents
-  are within a 10-minute walk.
+  resident walking time (walks capped at 30 minutes). Even with every candidate site open,
+  only part of the population is within a 10-minute walk, so selection stops when the
+  share within 10 minutes reaches 90% of that achievable maximum.
 
 This is a demonstration of method and a from-scratch network design. It is not an audit
 of any operator's real network. The analysis is independent, uses no Budbee data, and is

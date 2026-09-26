@@ -100,8 +100,14 @@ Lidl and R-kioski as its locker hosts, and Budbee Boxes are found in shopping ce
 
 ## 3. Walking network: OpenStreetMap via OSMnx
 
-- `osmnx.graph_from_polygon(<study area buffered 500 m, in EPSG:4326>, network_type="walk")`
-- Cache the downloaded graph (GraphML) in `data/raw/` so it is fetched once.
+- `osmnx.graph_from_polygon(<study area buffered 500 m, in EPSG:4326>, custom_filter=WALK_FILTER)`
+- `WALK_FILTER` is OSMnx's standard `walk` filter with `cycleway` removed from the excluded
+  highway types (decided in Step 3). Finnish OSM maps most footpaths as shared foot and
+  cycle paths: of 13,612 cycleway ways in the Espoo area, 13,314 are tagged
+  `foot=designated/yes/permissive`, 259 have no foot tag, 29 are `foot=no` (still
+  excluded). The standard filter dropped them all and cut Otaniemi off from the network.
+- Cached as `data/raw/walk_network_with_cycleways.graphml` so it is fetched once.
+  (`data/raw/walk_network.graphml` is the superseded standard-filter download.)
 - Project to EPSG:3067 for distances in metres.
 - Licence: ODbL, as above.
 

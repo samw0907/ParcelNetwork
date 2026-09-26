@@ -21,7 +21,7 @@ GRID_GPKG = PROCESSED_DIR / "grid.gpkg"
 SITES_GPKG = PROCESSED_DIR / "sites.gpkg"
 SNAPS_GPKG = PROCESSED_DIR / "snaps.gpkg"
 SELECTION_GPKG = PROCESSED_DIR / "selection.gpkg"
-WALK_GRAPH = RAW_DIR / "walk_network.graphml"
+WALK_GRAPH = RAW_DIR / "walk_network_with_cycleways.graphml"
 
 OUT_XLSX = OUTPUTS_DIR / "parcel_locker_analysis.xlsx"
 OUT_GIS_GPKG = GIS_DIR / "parcelnetwork.gpkg"
@@ -56,14 +56,16 @@ SITE_MERGE_M = 50       # candidates closer than this are merged into one site
 # --- Walking network and snapping -------------------------------------------
 
 SNAP_FLAG_M = 200       # cells snapped further than this are flagged
-SNAP_EXCLUDE_M = None   # set in Step 3 from the snap-distance distribution
+SNAP_EXCLUDE_M = 500    # cells snapped further are excluded from the metrics
 
 # --- Walking time and site selection ----------------------------------------
 
 WALK_SPEED_M_PER_MIN = 80   # 4.8 km/h
 WALK_CAP_MIN = 30           # longer walks count as 30 in the objective
 TARGET_MIN = 10
-TARGET_SHARE = 0.90         # stop when this share of residents is within TARGET_MIN
+# Stop when the share of residents within TARGET_MIN reaches TARGET_SHARE of the
+# share achievable with every candidate open (the ceiling).
+TARGET_SHARE = 0.90
 SNAPSHOT_SITES = 10         # Map 2 snapshot
 MAX_SITES = 60
 

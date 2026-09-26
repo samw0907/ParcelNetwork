@@ -143,6 +143,7 @@ def shops_geodataframe(payload):
             "name": tags.get("name", ""),
             "brand": tags.get("brand", ""),
             "operator": tags.get("operator", ""),
+            "label": display_name(tags),
             "shape": shape,
         })
     gdf = gpd.GeoDataFrame(rows, geometry="shape", crs=WGS84).to_crs(TARGET_CRS)
@@ -158,6 +159,20 @@ def shops_geodataframe(payload):
     gdf["footprint"] = gdf.geometry.where(is_outline, gdf["location"])
     gdf["outline_m2"] = np.where(is_outline, gdf.geometry.area, 0.0)
     return gdf.set_geometry("location").drop(columns="shape")
+
+
+def display_name(tags):
+    """Name that tells chain stores apart: 'K-Market' becomes 'K-Market Kilo' from
+    the OSM branch tag, or 'Lidl Kurjenkellontie' from the street if there is no
+    branch."""
+    name = tags.get("name", "")
+    branch = tags.get("branch", "")
+    street = tags.get("addr:street", "")
+    if branch and branch.lower() not in name.lower():
+        return f"{name} {branch}".strip()
+    if name and name == tags.get("brand") and street:
+        return f"{name} {street}"
+    return name
 
 
 def classify(row):
@@ -195,10 +210,10 @@ def merge_sites(candidates):
         rep = group.iloc[0]
         others = group.iloc[1:]
         rows.append({
-            "name": rep["name"] or f"({rep['chain']}, unnamed)",
+            "name": rep["label"] or f"({rep['chain']}, unnamed)",
             "chain": rep["chain"],
             "merged_names": "; ".join(
-                f"{r['name'] or '(unnamed)'} [{r['chain']}]" for _, r in others.iterrows()
+                f"{r['label'] or '(unnamed)'} [{r['chain']}]" for _, r in others.iterrows()
             ),
             "n_merged": len(others),
             "osm_ref": rep["osm_ref"],
